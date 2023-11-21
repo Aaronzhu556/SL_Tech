@@ -56,9 +56,24 @@
             alert('Invalid email format');
             return;
         }
-
+        // 发送验证码请求
+        axios.get('http://localhost:8080/auth/getcaptcha', {
+            params:
+                {user_email: email}
+        })
+            .then(function(response) {
+                // 处理验证码发送成功的逻辑
+                if (parseInt(response.data.res_code)===200){
+                    alert('验证码发送成功!');
+                }
+                else alert('验证码发送失败!');
+            })
+            .catch(function(error) {
+                // 处理验证码发送失败的逻辑
+                console.error('Error sending captcha', error);
+            });
         // 在这里添加发送验证码的逻辑
-        alert('Captcha sent!');
+        //alert('Captcha sent!');
     }
 
     function validateEmail(email) {
