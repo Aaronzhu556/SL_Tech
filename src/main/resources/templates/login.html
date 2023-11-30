@@ -99,14 +99,30 @@
         }
 
         // 向后端发送登录请求
-        axios.post('/api/login', {
+        axios.post('http://localhost:8080/auth/login', {
             user_email: email,
             user_password: password,
             user_code: captcha
         })
             .then(function(response) {
                 // 处理登录成功的逻辑
-                console.log('Login successful');
+                if (parseInt(response.data.res_code)===200){
+                    alert('Login successful');
+                    window.sessionStorage.setItem("token",response.data.res_object);
+                    window.location.href="http://localhost:8080/form.html";
+                }
+                else if (parseInt(response.data.res_code)===201) {
+                    alert('Login failure, wrong password or email!');
+                }
+                else if (parseInt(response.data.res_code)===202){
+                    alert('Login failure, this user does not exist!');
+                }
+                else if (parseInt(response.data.res_code)===203){
+                    alert('Wrong captcha!');
+
+                }
+
+
             })
             .catch(function(error) {
                 // 处理登录失败的逻辑

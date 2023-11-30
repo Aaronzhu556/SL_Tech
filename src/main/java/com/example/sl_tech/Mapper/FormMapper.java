@@ -1,0 +1,11 @@
+package com.example.sl_tech.Mapper;
+
+import com.example.sl_tech.Entity.Form;
+import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
+
+@Mapper
+public interface FormMapper {
+    List<Form> getAllForm(String user_email);
+}

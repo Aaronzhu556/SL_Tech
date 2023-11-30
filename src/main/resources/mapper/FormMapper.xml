@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.sl_tech.Mapper.FormMapper">
+    <select id="getAllForm" resultType="com.example.sl_tech.Entity.Form">
+        select * from t_form where form_user_email=#{form_user_email}
+    </select>
+</mapper>

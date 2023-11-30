@@ -31,14 +31,22 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public String userLogin(UserDTO userDTO) {
+    public Integer userLogin(UserDTO userDTO) {
+        Integer code  = 0;
         String valueByKey = (String) redisUtil.getValueByKey(userDTO.getUser_email());
         if (valueByKey.equals(userDTO.getUser_code())){ //验证码正确
             User user = userMapper.getUserByEmail(userDTO.getUser_email());
-        }
+            if (user!=null) {
+                if (user.getUser_password().equals(userDTO.getUser_password())){
+                    //密码正确，登录成功
+                    code=200;
+                }
+                else code=201; //密码错误
+            }
+            else code=202;//用户不存在
+        }else code=203;//验证码不正确
 
+        return  code;
 
-
-        return null;
     }
 }
