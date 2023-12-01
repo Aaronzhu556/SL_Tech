@@ -3,6 +3,9 @@
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.sl_tech.Mapper.FormMapper">
+    <insert id="addForm">
+        insert into t_form(form_content,form_file, form_user_email) values(#{form_content},#{form_file},#{form_user_email})
+    </insert>
     <select id="getAllForm" resultType="com.example.sl_tech.Entity.Form">
         select * from t_form where form_user_email=#{form_user_email}
     </select>

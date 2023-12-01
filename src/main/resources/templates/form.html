@@ -159,7 +159,14 @@
 
     )
             .then(function (response) {
-              console.log('Form submitted successfully:', response.data);
+              if (parseInt(response.data.res_code)===200){
+                alert("问卷和文件上传成功");
+                window.location.href="http://localhost:8080/form.html";
+              }
+              else {
+                alert("问卷和文件上传失败");
+
+              }
               // Add any additional handling here
             })
             .catch(function (error) {

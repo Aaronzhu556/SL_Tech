@@ -8,4 +8,5 @@ import java.util.List;
 @Mapper
 public interface FormMapper {
     List<Form> getAllForm(String user_email);
+    int addForm(Form form);
 }
