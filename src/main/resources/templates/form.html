@@ -31,6 +31,11 @@
     <!-- Fill Form Tab -->
     <div class="tab-pane fade show active" id="fill-tab-content">
       <button type="button" class="btn btn-primary mt-3" onclick="addRow()">Add Row</button>
+      <div class="form-row align-items-center mt-3">
+        <div class="col-10">
+          <input type="text" class="form-control" placeholder="Form Title" name="formTitle" required>
+        </div>
+      </div>
       <form id="surveyForm" onsubmit="submitForm(event)" enctype='multipart/form-data'>
         <!-- Initial Question and Answer containers -->
         <div class="form-row align-items-center question-container">
@@ -55,8 +60,19 @@
 
     <!-- View Forms Tab -->
     <div class="tab-pane fade" id="view-tab-content">
-      <!-- Add content for viewing forms here -->
-      <p>This is the view forms tab content.</p>
+      <table class="table mt-3">
+        <thead>
+        <tr>
+          <th scope="col">Form ID</th>
+          <th scope="col">Form Content</th>
+          <th scope="col">Attachment</th>
+          <th scope="col">Details</th>
+        </tr>
+        </thead>
+        <tbody id="formDataBody">
+        <!-- Form data will be dynamically added here -->
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -124,6 +140,7 @@
     var questions = document.getElementsByName('question[]');
     var answers = document.getElementsByName('answer[]');
     var attachment = document.querySelector('input[name="attachment"]');
+    var formTitle = document.querySelector('input[name="formTitle"]').value.trim();
     for (var i = 0; i < questions.length; i++) {
       if (questions[i].value.trim() === '' || answers[i].value.trim() === '') {
         formIsValid = false;
@@ -139,14 +156,16 @@
     // Create form data
     var formData = new FormData();
     for (var i = 0; i < questions.length; i++) {
-      formData.append('question'+ i+1, questions[i].value.trim());
-      formData.append('answer'+i+1, answers[i].value.trim());
+      formData.append('question'+ i, questions[i].value.trim());
+      formData.append('answer'+i, answers[i].value.trim());
     }
+
     //formData.append('form_content',document.getElementById('surveyForm'));
     //formData.append('form_file', attachment.files[0]);
     // Submit data to the backend (replace with your actual endpoint)
     axios.post('http://localhost:8080/form/addform',
             {
+                form_title: formTitle,
                 form_content: JSON.stringify(Object.fromEntries(formData.entries())),
                 form_file: attachment.files[0]
             }
@@ -173,6 +192,67 @@
               console.error('Error submitting form:', error);
             });
   }
+  // 用于获取并展示表单数据的函数
+  function displayFormData() {
+    console.log("确实触发了")
+    // 发送API请求以获取表单数据（用实际的端点替换）
+    axios.get('http://localhost:8080/form/getallform', {
+      headers: {
+        'Authorization': sessionStorage.getItem('token'),
+      }
+    })
+            .then(function (response) {
+              // 检查响应是否成功
+              if (parseInt(response.data.res_code) === 200) {
+                // 获取表单数据
+                var formData = response.data.res_object;
+
+                // 获取表格主体元素
+                var tableBody = document.getElementById('formDataBody');
+
+                // 清除现有的表格行
+                tableBody.innerHTML = '';
+                console.log(formData[0].form_content)
+                // 遍历表单数据并创建表格行
+                formData.forEach(function (form) {
+                  var row = document.createElement('tr');
+                  var formIdCell = document.createElement('td');
+                  formIdCell.textContent = form.form_id;
+                  var formContentCell = document.createElement('td');
+                  formContentCell.textContent = form.form_content;
+                  var attachmentCell = document.createElement('td');
+                  var attachmentLink = document.createElement('a');
+                  var path_prefix = "http://localhost:8080/public/file/"
+                  //console.log(path_prefix+form.form_file)
+                  attachmentLink.setAttribute('href', path_prefix+form.form_file); // 用实际的附件URL替换
+                  attachmentLink.setAttribute('download', 'attachment'); // 设置下载属性
+                  attachmentLink.textContent = '下载附件';
+                  attachmentCell.appendChild(attachmentLink);
+                  var detailsCell = document.createElement('td');
+                  var detailsLink = document.createElement('a');
+                  detailsLink.setAttribute('href', 'view-details.html?form_id=' + form.form_id); // 用实际的详情页URL替换
+                  detailsLink.textContent = '查看详情';
+                  detailsCell.appendChild(detailsLink);
+
+                  row.appendChild(formIdCell);
+                  row.appendChild(formContentCell);
+                  row.appendChild(attachmentCell);
+                  row.appendChild(detailsCell);
+
+                  // 将行追加到表格主体
+                  tableBody.appendChild(row);
+                });
+              } else {
+                console.error('获取表单数据时出错:', response);
+              }
+            })
+            .catch(function (error) {
+              console.error('获取表单数据时出错:', error);
+            });
+  }
+
+  // 在点击"View Forms"选项卡时调用函数展示表单数据
+  document.getElementById('view-tab').addEventListener('click', displayFormData);
 </script>
 </body>
 </html>

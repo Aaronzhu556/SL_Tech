@@ -11,4 +11,6 @@ import java.util.List;
 public interface FormService {
     int addForm(Form form);
     String uploadFile(MultipartFile form_file,String user_email) throws IOException;
+
+    List<Form> getAllForm(String user_email);
 }

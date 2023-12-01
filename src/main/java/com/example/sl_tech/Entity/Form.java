@@ -10,13 +10,23 @@ import java.io.Serializable;
 @Data
 public class Form implements Serializable {
     private int form_id;
+    private String form_title;
     private String form_content;
     private String form_file; //存放地址
     private String form_user_email;
 
-    public Form(String form_content, String form_file, String form_user_email) {
+    public Form(String form_title,String form_content, String form_file, String form_user_email) {
         this.form_content = form_content;
         this.form_file = form_file;
         this.form_user_email = form_user_email;
+        this.form_title = form_title;
+    }
+
+    public Form(int form_id, String form_title,String form_content, String form_file, String form_user_email) {
+        this.form_id = form_id;
+        this.form_content = form_content;
+        this.form_file = form_file;
+        this.form_user_email = form_user_email;
+        this.form_title = form_title;
     }
 }
