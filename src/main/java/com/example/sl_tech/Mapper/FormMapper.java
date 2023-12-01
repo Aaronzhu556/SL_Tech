@@ -9,4 +9,6 @@ import java.util.List;
 public interface FormMapper {
     List<Form> getAllForm(String user_email);
     int addForm(Form form);
+    String getFormDetails(int form_id);
+    List<Form> searchForm(String form_title);
 }

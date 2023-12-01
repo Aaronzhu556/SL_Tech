@@ -57,14 +57,44 @@
       </div>
       <button type="submit" class="btn btn-success mt-3" onclick="submitForm(event)">Submit Survey</button>
     </div>
-
+    <div class="modal fade" id="formDetailsModal" tabindex="-1" role="dialog" aria-labelledby="formDetailsModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="formDetailsModalLabel">问卷详情</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <!-- Content will be dynamically added here -->
+            <div id="formDetailsContent"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- View Forms Tab -->
     <div class="tab-pane fade" id="view-tab-content">
+      <div class="form-row mt-3">
+        <div class="col-6">
+          <input type="text" class="form-control" id="searchFormTitle" placeholder="搜索问卷标题">
+        </div>
+        <div class="col-6">
+          <button class="btn btn-primary" onclick="searchForm()">搜索</button>
+          <button class="btn btn-secondary" onclick="clearSearch()">清除搜索</button>
+
+        </div>
+      </div>
+
       <table class="table mt-3">
         <thead>
         <tr>
           <th scope="col">Form ID</th>
-          <th scope="col">Form Content</th>
+          <th scope="col">Form Title</th> <!-- Add this line -->
+<!--          <th scope="col">Form Content</th>-->
           <th scope="col">Attachment</th>
           <th scope="col">Details</th>
         </tr>
@@ -157,7 +187,8 @@
     var formData = new FormData();
     for (var i = 0; i < questions.length; i++) {
       formData.append('question'+ i, questions[i].value.trim());
-      formData.append('answer'+i, answers[i].value.trim());
+      formData.append('answer'+i , answers[i].value.trim());
+
     }
 
     //formData.append('form_content',document.getElementById('surveyForm'));
@@ -218,24 +249,31 @@
                   var row = document.createElement('tr');
                   var formIdCell = document.createElement('td');
                   formIdCell.textContent = form.form_id;
-                  var formContentCell = document.createElement('td');
-                  formContentCell.textContent = form.form_content;
+                  var formTitleCell = document.createElement('td'); // Add this line
+                  formTitleCell.textContent = form.form_title; // Add this line
+                  // var formContentCell = document.createElement('td');
+                  // formContentCell.textContent = form.form_content;
                   var attachmentCell = document.createElement('td');
                   var attachmentLink = document.createElement('a');
                   var path_prefix = "http://localhost:8080/public/file/"
                   //console.log(path_prefix+form.form_file)
                   attachmentLink.setAttribute('href', path_prefix+form.form_file); // 用实际的附件URL替换
-                  attachmentLink.setAttribute('download', 'attachment'); // 设置下载属性
+                  attachmentLink.setAttribute('download', form.form_title); // 设置下载属性
                   attachmentLink.textContent = '下载附件';
                   attachmentCell.appendChild(attachmentLink);
                   var detailsCell = document.createElement('td');
                   var detailsLink = document.createElement('a');
-                  detailsLink.setAttribute('href', 'view-details.html?form_id=' + form.form_id); // 用实际的详情页URL替换
+                  detailsLink.setAttribute('href', '#'); // 用实际的详情页URL替换
                   detailsLink.textContent = '查看详情';
+                  detailsLink.addEventListener('click', function () {
+                    displayFormDetails(form.form_id);
+                  });
                   detailsCell.appendChild(detailsLink);
 
+
                   row.appendChild(formIdCell);
-                  row.appendChild(formContentCell);
+                  row.appendChild(formTitleCell); // Add this line
+                 // row.appendChild(formContentCell);
                   row.appendChild(attachmentCell);
                   row.appendChild(detailsCell);
 
@@ -253,6 +291,128 @@
 
   // 在点击"View Forms"选项卡时调用函数展示表单数据
   document.getElementById('view-tab').addEventListener('click', displayFormData);
+
+  function displayFormDetails(formId) {
+    // 发送API请求以获取特定表单的详细信息（用实际的端点替换）
+    axios.get('http://localhost:8080/form/getformdetails/' + formId, {
+      headers: {
+        'Authorization': sessionStorage.getItem('token'),
+      }
+    })
+            .then(function (response) {
+              console.log("访问成功了呀")
+              // 检查响应是否成功
+              if (parseInt(response.data.res_code) === 200) {
+                // 获取表单详细信息
+                console.log("访问成功了呀")
+                var formDetails = response.data.res_object;
+
+                // 获取模态框内容元素
+                var formDetailsContent = document.getElementById('formDetailsContent');
+
+                // 清除现有的内容
+                formDetailsContent.innerHTML = '';
+
+                // 遍历表单详细信息并创建展示框
+                formDetails.forEach(function (detail) {
+                  var questionAnswerDiv = document.createElement('div');
+                  questionAnswerDiv.innerHTML = '<strong>问题:</strong> ' + detail.question + '<br><strong>答案:</strong> ' + detail.answer;
+                  formDetailsContent.appendChild(questionAnswerDiv);
+                });
+
+                // 显示模态框
+                $('#formDetailsModal').modal('show');
+              } else {
+                console.error('获取表单详细信息时出错:', response);
+              }
+            })
+            .catch(function (error) {
+              console.error('获取表单详细信息时出错:', error);
+            });
+  }
+
+  // 在点击"查看详情"按钮时调用函数
+  document.getElementById('formDataBody').addEventListener('click', function (event) {
+    if (event.target && event.target.tagName === 'A' && event.target.textContent === '查看详情') {
+      // 获取表单ID
+      var formId = event.target.parentNode.parentNode.firstChild.textContent;
+      // 调用显示表单详情的函数
+      displayFormDetails(formId);
+    }
+  });
+  function searchForm() {
+    var searchInput = document.getElementById('searchFormTitle').value.trim().toLowerCase();
+    if (searchInput === '') {
+      alert('请输入搜索关键词');
+      return;
+    }
+
+    // 发送API请求以获取搜索结果（用实际的端点替换）
+    axios.get('http://localhost:8080/form/searchform?form_title=' + searchInput, {
+      headers: {
+        'Authorization': sessionStorage.getItem('token'),
+      }
+    })
+            .then(function (response) {
+              // 检查响应是否成功
+              if (parseInt(response.data.res_code) === 200) {
+                // 获取搜索结果
+                var searchResults = response.data.res_object;
+
+                // 获取表格主体元素
+                var tableBody = document.getElementById('formDataBody');
+
+                // 清除现有的表格行
+                tableBody.innerHTML = '';
+
+                // 遍历搜索结果并创建表格行
+                searchResults.forEach(function (result) {
+                  var row = document.createElement('tr');
+                  var formIdCell = document.createElement('td');
+                  formIdCell.textContent = result.form_id;
+                  var formTitleCell = document.createElement('td');
+                  formTitleCell.textContent = result.form_title;
+                  var attachmentCell = document.createElement('td');
+                  var attachmentLink = document.createElement('a');
+                  var path_prefix = "http://localhost:8080/public/file/";
+                  attachmentLink.setAttribute('href', path_prefix + result.form_file);
+                  attachmentLink.setAttribute('download', result.form_title);
+                  attachmentLink.textContent = '下载附件';
+                  attachmentCell.appendChild(attachmentLink);
+                  var detailsCell = document.createElement('td');
+                  var detailsLink = document.createElement('a');
+                  detailsLink.setAttribute('href', '#');
+                  detailsLink.textContent = '查看详情';
+                  detailsLink.addEventListener('click', function () {
+                    displayFormDetails(result.form_id);
+                  });
+                  detailsCell.appendChild(detailsLink);
+
+                  row.appendChild(formIdCell);
+                  row.appendChild(formTitleCell);
+                  row.appendChild(attachmentCell);
+                  row.appendChild(detailsCell);
+
+                  // 将行追加到表格主体
+                  tableBody.appendChild(row);
+                });
+              } else {
+                console.error('搜索问卷时出错:', response);
+              }
+            })
+            .catch(function (error) {
+              console.error('搜索问卷时出错:', error);
+            });
+  }
+
+  // 清除搜索结果并显示所有数据的函数
+  function clearSearch() {
+    // 清除搜索框内容
+    document.getElementById('searchFormTitle').value = '';
+
+    // 调用显示所有数据的函数
+    displayFormData();
+  }
 </script>
 </body>
 </html>

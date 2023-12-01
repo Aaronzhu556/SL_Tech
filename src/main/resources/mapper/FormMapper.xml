@@ -9,4 +9,10 @@
     <select id="getAllForm" resultType="com.example.sl_tech.Entity.Form">
         select * from t_form where form_user_email=#{form_user_email}
     </select>
+    <select id="getFormDetails" resultType="java.lang.String">
+        select form_content from t_form where form_id=#{form_id}
+    </select>
+    <select id="searchForm" resultType="com.example.sl_tech.Entity.Form">
+        select * from t_form where form_title like #{form_tile}
+    </select>
 </mapper>
