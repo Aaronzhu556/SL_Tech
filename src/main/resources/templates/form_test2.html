@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Survey Form</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* Add your custom styles here */
+    .question-container {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container mt-5">
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+      <a class="nav-link active" id="fill-tab" data-toggle="tab" href="#fill-tab-content">Fill Form</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" id="view-tab" data-toggle="tab" href="#view-tab-content">View Forms</a>
+    </li>
+  </ul>
+
+  <div class="tab-content mt-3">
+    <!-- Fill Form Tab -->
+    <div class="tab-pane fade show active" id="fill-tab-content">
+      <button type="button" class="btn btn-primary mt-3" onclick="addRow()">Add Row</button>
+      <form id="surveyForm">
+        <!-- Initial Question and Answer containers -->
+        <div class="form-row align-items-center question-container">
+          <div class="col-1">
+            <button type="button" class="btn btn-danger" onclick="removeRow(this)">X</button>
+          </div>
+          <div class="col-5">
+            <label for="question1">Question 1:</label>
+            <input type="text" class="form-control" id="question1" name="question[]" required>
+          </div>
+          <div class="col-5">
+            <label for="answer1">Answer 1:</label>
+            <input type="text" class="form-control" id="answer1" name="answer[]" required>
+          </div>
+        </div>
+      </form>
+      <button type="submit" class="btn btn-success mt-3">Submit Survey</button>
+    </div>
+
+    <!-- View Forms Tab -->
+    <div class="tab-pane fade" id="view-tab-content">
+      <!-- Add content for viewing forms here -->
+      <p>This is the view forms tab content.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+<script>
+  function addRow() {
+    var rowCount = document.querySelectorAll('.question-container').length + 1;
+
+    var newQuestionContainer = document.createElement('div');
+    newQuestionContainer.classList.add('form-row', 'align-items-center', 'question-container');
+
+    var removeBtnCol = document.createElement('div');
+    removeBtnCol.classList.add('col-1');
+
+    var removeBtn = document.createElement('button');
+    removeBtn.setAttribute('type', 'button');
+    removeBtn.setAttribute('class', 'btn btn-danger');
+    removeBtn.setAttribute('onclick', 'removeRow(this)');
+    removeBtn.textContent = 'X';
+
+    var newQuestionCol = document.createElement('div');
+    newQuestionCol.classList.add('col-5');
+
+    var newLabel = document.createElement('label');
+    newLabel.setAttribute('for', 'question' + rowCount);
+    newLabel.textContent = 'Question ' + rowCount + ':';
+
+    var newInput = document.createElement('input');
+    newInput.setAttribute('type', 'text');
+    newInput.setAttribute('class', 'form-control');
+    newInput.setAttribute('id', 'question' + rowCount);
+    newInput.setAttribute('name', 'question[]');
+    newInput.setAttribute('required', '');
+
+    var newAnswerCol = document.createElement('div');
+    newAnswerCol.classList.add('col-5');
+
+    var newAnswerLabel = document.createElement('label');
+    newAnswerLabel.setAttribute('for', 'answer' + rowCount);
+    newAnswerLabel.textContent = 'Answer ' + rowCount + ':';
+
+    var newAnswerInput = document.createElement('input');
+    newAnswerInput.setAttribute('type', 'text');
+    newAnswerInput.setAttribute('class', 'form-control');
+    newAnswerInput.setAttribute('id', 'answer' + rowCount);
+    newAnswerInput.setAttribute('name', 'answer[]');
+    newAnswerInput.setAttribute('required', '');
+
+    removeBtnCol.appendChild(removeBtn);
+    newQuestionCol.appendChild(newLabel);
+    newQuestionCol.appendChild(newInput);
+    newAnswerCol.appendChild(newAnswerLabel);
+    newAnswerCol.appendChild(newAnswerInput);
+
+    newQuestionContainer.appendChild(removeBtnCol);
+    newQuestionContainer.appendChild(newQuestionCol);
+    newQuestionContainer.appendChild(newAnswerCol);
+
+    document.getElementById('surveyForm').appendChild(newQuestionContainer);
+  }
+
+  function removeRow(btn) {
+    var row = btn.parentNode.parentNode;
+    row.parentNode.removeChild(row);
+  }
+</script>
+</body>
+</html>

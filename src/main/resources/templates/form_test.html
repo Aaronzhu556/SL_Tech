@@ -31,7 +31,7 @@
     <!-- Fill Form Tab -->
     <div class="tab-pane fade show active" id="fill-tab-content">
       <button type="button" class="btn btn-primary mt-3" onclick="addRow()">Add Row</button>
-      <form id="surveyForm" onsubmit="submitForm(event)" enctype='multipart/form-data'>
+      <form id="surveyForm" onsubmit="submitForm(event)">
         <!-- Initial Question and Answer containers -->
         <div class="form-row align-items-center question-container">
           <div class="col-1">
@@ -45,12 +45,15 @@
           </div>
         </div>
       </form>
+
+      <!-- Single attachment input outside the form -->
       <div class="form-row align-items-center mb-3">
         <div class="col-5">
-          <input type="file" name="attachment" class="form-control" required >
+          <input type="file" name="attachment" class="form-control" required>
         </div>
       </div>
-      <button type="submit" class="btn btn-success mt-3" onclick="submitForm(event)">Submit Survey</button>
+
+      <button class="btn btn-success mt-3">Submit Survey</button>
     </div>
 
     <!-- View Forms Tab -->
@@ -67,6 +70,8 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 
 <script>
+  var questionCount = 1; // Initial question count
+
   function addRow() {
     var newQuestionContainer = document.createElement('div');
     newQuestionContainer.classList.add('form-row', 'align-items-center', 'question-container');
@@ -89,6 +94,7 @@
     newInputQuestion.setAttribute('placeholder', 'Question');
     newInputQuestion.setAttribute('name', 'question[]');
     newInputQuestion.setAttribute('required', '');
+    newInputQuestion.value = 'Question ' + (questionCount + 1);
 
     var newAnswerCol = document.createElement('div');
     newAnswerCol.classList.add('col-5');
@@ -99,6 +105,7 @@
     newInputAnswer.setAttribute('placeholder', 'Answer');
     newInputAnswer.setAttribute('name', 'answer[]');
     newInputAnswer.setAttribute('required', '');
+    newInputAnswer.value = 'Answer ' + (questionCount + 1);
 
     removeBtnCol.appendChild(removeBtn);
     newQuestionCol.appendChild(newInputQuestion);
@@ -109,6 +116,8 @@
     newQuestionContainer.appendChild(newAnswerCol);
 
     document.getElementById('surveyForm').appendChild(newQuestionContainer);
+
+    questionCount++;
   }
 
   function removeRow(btn) {
@@ -117,47 +126,52 @@
   }
 
   function submitForm(event) {
-    //event.preventDefault();
+    // event.preventDefault();
 
-    // Check if all existing question and answer fields are not empty
+    // Check if all existing question, answer, and attachment fields are not empty
     var formIsValid = true;
     var questions = document.getElementsByName('question[]');
     var answers = document.getElementsByName('answer[]');
     var attachment = document.querySelector('input[name="attachment"]');
+
     for (var i = 0; i < questions.length; i++) {
-      if (questions[i].value.trim() === '' || answers[i].value.trim() === '') {
+      if (
+              questions[i].value.trim() === '' ||
+              answers[i].value.trim() === ''
+      ) {
         formIsValid = false;
         break;
       }
     }
 
+    if (attachment.files.length === 0) {
+      formIsValid = false;
+    }
+
     if (!formIsValid) {
-      alert('Please fill in all fields before submitting.');
+      alert('Please fill in all fields and attach a file before submitting.');
       return;
     }
 
     // Create form data
     var formData = new FormData();
+
+    // Add questions and answers to form data
     for (var i = 0; i < questions.length; i++) {
-      formData.append('question'+ i+1, questions[i].value.trim());
-      formData.append('answer'+i+1, answers[i].value.trim());
+      formData.append('question[]', questions[i].value.trim());
+      formData.append('answer[]', answers[i].value.trim());
     }
-    //formData.append('form_content',document.getElementById('surveyForm'));
-    //formData.append('form_file', attachment.files[0]);
+
+    // Add attachment to form data
+    formData.append('attachment', attachment.files[0]);
+
     // Submit data to the backend (replace with your actual endpoint)
-    axios.post('http://localhost:8080/form/addform',
-            {
-                form_content: JSON.stringify(Object.fromEntries(formData.entries())),
-                form_file: attachment.files[0]
-            }
-      ,
-    { headers: {
-      'Authorization': sessionStorage.getItem('token'),
-              'Content-Type': 'multipart/form-data'
-    }}
-
-
-    )
+    axios.post('http://localhost:8080/form/addform', formData, {
+      headers: {
+        'Authorization' : sessionStorage.getItem('token'),
+        'Content-Type': 'multipart/form-data'
+      }
+    })
             .then(function (response) {
               console.log('Form submitted successfully:', response.data);
               // Add any additional handling here
